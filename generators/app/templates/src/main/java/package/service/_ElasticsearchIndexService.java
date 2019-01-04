@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import <%=packageName%>.domain.*;
 import <%=packageName%>.repository.*;
 import <%=packageName%>.repository.search.*;
-import org.elasticsearch.indices.IndexAlreadyExistsException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -141,13 +140,13 @@ public class ElasticsearchIndexService {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings("rawtypes")
     private <T, ID extends Serializable> void reindexForClass(Class<T> entityClass, JpaRepository<T, ID> jpaRepository,
                                                               ElasticsearchRepository<T, ID> elasticsearchRepository) {
         elasticsearchTemplate.deleteIndex(entityClass);
         try {
             elasticsearchTemplate.createIndex(entityClass);
-        } catch (IndexAlreadyExistsException e) {
+        } catch (Exception e) {
             // Do nothing. Index was already concurrently recreated by some other service.
         }
         elasticsearchTemplate.putMapping(entityClass);
@@ -172,7 +171,7 @@ public class ElasticsearchIndexService {
 
             int size = 100;
             for (int i = 0; i <= jpaRepository.count() / size; i++) {
-                Pageable page = new PageRequest(i, size);
+                Pageable page = PageRequest.of(i, size);
                 log.info("Indexing page {} of {}, size {}", i, jpaRepository.count() / size, size);
                 Page<T> results = jpaRepository.findAll(page);
                 results.map(result -> {
@@ -187,7 +186,7 @@ public class ElasticsearchIndexService {
                     });
                     return result;
                 });
-                elasticsearchRepository.save(results.getContent());
+                elasticsearchRepository.saveAll(results.getContent());
             }
         }
         log.info("Elasticsearch: Indexed all rows for {}", entityClass.getSimpleName());

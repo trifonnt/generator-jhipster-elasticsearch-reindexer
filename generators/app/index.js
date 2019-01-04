@@ -8,10 +8,10 @@ var fse = require('fs-extra');
 var semver = require('semver');
 
 try {
-  var BaseGenerator = require('generator-jhipster/generators/generator-base');
-  var jhipsterConstants = require('generator-jhipster/generators/generator-constants');
+  var BaseGenerator = require('generator-jhipster-x/generators/generator-base');
+  var jhipsterConstants = require('generator-jhipster-x/generators/generator-constants');
 } catch (err) {
-  BaseGenerator = require('generator-jhipster/script-base');
+  BaseGenerator = require('generator-jhipster-x/script-base');
   jhipsterConstants = {
     SERVER_MAIN_SRC_DIR: 'src/main/java/',
     SERVER_MAIN_RES_DIR: 'src/main/resources/',
